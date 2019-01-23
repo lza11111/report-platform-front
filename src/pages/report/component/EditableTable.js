@@ -123,6 +123,15 @@ export default class EditableTable extends React.Component {
     };
   }
 
+  componentWillReceiveProps(nextProps){
+    if( nextProps.dataSource !== this.props.dataSource){
+      this.setState({
+        dataSource: nextProps.dataSource,
+        count: nextProps.dataSource.length,
+      });
+    }
+  }
+
   handleDelete = key => {
     const dataSource = [...this.state.dataSource];
     this.setState({ dataSource: dataSource.filter(item => item.key !== key) });
@@ -153,7 +162,7 @@ export default class EditableTable extends React.Component {
       ...row,
     });
     this.setState({ dataSource: newData });
-    //save(newData);
+    save(newData);
   };
 
   render() {
@@ -179,6 +188,7 @@ export default class EditableTable extends React.Component {
         }),
       };
     });
+    console.log(dataSource);
     return (
       <div>
         <Table

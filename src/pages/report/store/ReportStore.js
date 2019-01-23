@@ -13,20 +13,17 @@ class ReportStore {
   @observable templateUser = "";
   @observable templateId = 0;
 
-  @observable reportTempContent = {};
-  
   @action fetchReportList = () => {
     return request.get(`/api/reports/`)
-      .then(res => { 
+      .then(res => {
         this.reportList = res;
       });
   }
 
   @action fetchReport = (id) => {
     return request.get(`/api/report/${id}`)
-      .then(res => { 
+      .then(res => {
         this.reportContent = res.content;
-        this.reportTempContent = res.content;
         this.reportUser = res.user;
         this.reportId = res.id;
         this.templateId = res.templateId;
@@ -36,11 +33,37 @@ class ReportStore {
   @action fetchTemplate = (id) => {
     if (!id) id = this.templateId;
     return request.get(`/api/report-template/${id}`)
-      .then(res => { 
+      .then(res => {
         this.templateContent = res.content;
         this.templateUser = res.user;
         //this.templattId = res.id;
       });
+  }
+
+  @action updateReport = (content) => {
+    return request.put(`/api/report/${this.reportId}`,{
+      data: {
+        content
+      }
+    }).then(res => {
+      console.log(res);
+        this.reportContent = res.content;
+      })
+  }
+
+  @action addReport = (user, templateId, content) => {
+    return request.post('/api/report/', {
+      data: {
+        user,
+        templateId,
+        content,
+      }
+    }).then(res => {
+      this.reportContent = res.content;
+      this.reportUser = res.user;
+      this.reportId = res.id;
+      this.templateId = res.templateId;
+    })
   }
 }
 

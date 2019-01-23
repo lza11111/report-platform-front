@@ -15,13 +15,15 @@ class ReportDetailContainer extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      loading: true,
+      pageLoading: true,
+      buttonLoading: false,
       editing: false,
-      width: "100%"
+      width: "100%",
+      report: {},
     }
     ReportStore.fetchReport(this.props.match.params.id).then(() => {
       ReportStore.fetchTemplate().then(() => {
-        this.setState({ loading: false });
+        this.setState({ loading: false, report: ReportStore.reportContent });
       });
     })
   }
@@ -81,22 +83,33 @@ class ReportDetailContainer extends Component {
               className={styles.TextArea}
               autosize={{ minRows: 2, maxRows: 6 }}
               placeholder={content.placeholder}
-              defaultValue={ReportStore.reportContent[key]}
+              defaultValue={this.state.report[key]}
+              onChange={(value) => this.changeTextArea(value,key)}
             />
             :
             <p>
-              {ReportStore.reportContent[key]}
+              {this.state.report[key]}
             </p>
         )
       case 2:
         return (
           <EditableTable
-            dataSource={ReportStore.reportContent[key]}
+            dataSource={this.state.report[key] || []}
             columns={content.column}
             editable={this.state.editing}
+            save={(value) => this.changeTable(value,key)}
           />
         )
     }
+  }
+
+  // TODO: merge change function
+  changeTextArea = (value, key) => {
+    this.state.report[key] = value.target.value;
+  }
+
+  changeTable = (value, key) => {
+    this.state.report[key] = value;
   }
 
   editReport = () => {
@@ -104,7 +117,16 @@ class ReportDetailContainer extends Component {
   }
 
   cancelEditReport = () => {
-    this.setState({ editing: false });
+    this.setState({ editing: false, report: ReportStore.reportContent});
+  }
+
+  saveReport = () => {
+    this.setState({ editing: false,buttonLoading: true });
+    ReportStore.updateReport(
+      this.state.report
+    ).then(() => {
+      this.setState({ buttonLoading: false, report: ReportStore.reportContent });
+    });
   }
 
   render() {
@@ -115,12 +137,12 @@ class ReportDetailContainer extends Component {
         <FooterToolbar style={{ width }}>
           {this.state.editing ?
             <Popconfirm title={<p>确定要取消吗？<br/>将会丢失所有未保存的编辑内容！</p>} onConfirm={this.cancelEditReport}>
-              <Button>
+              <Button disabled={this.state.buttonLoading} loading={this.state.buttonLoading}>
                 取消
               </Button>
             </Popconfirm>
             : null}
-          {this.state.editing ? <Button type="danger" onClick={this.saveReport}>保存</Button> : null}
+          {this.state.editing ? <Button disabled={this.state.buttonLoading} loading={this.state.buttonLoading} type="danger" onClick={this.saveReport}>保存</Button> : null}
           {!this.state.editing ? <Button type="primary" onClick={this.editReport}>编辑</Button> : null}
         </FooterToolbar>
       </div>
