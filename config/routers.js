@@ -26,7 +26,7 @@ export default [
       },
       {
         path: '/report',
-        name: '报告模块',
+        name: 'report',
         icon: 'smile',
         
         routes: [
@@ -36,16 +36,24 @@ export default [
           },
           {
             path: '/report/list',
-            name: '所有报告',
+            name: 'reportlist',
             component: './report/container/ReportListContainer',
           },
           {
             path: '/report/add',
-            name: '新建报告',
+            name: 'reporttemplatelist',
+            component: './report/container/ReportTemplateListContainer',
+          },
+          {
+            path: '/report/add/:id',
+            name: 'reportnew',
+            hideInMenu: true,
             component: './report/container/NewReportContainer',
           },
           {
             path: '/report/:id',
+            name: 'reportdetail',
+            hideInMenu: true,
             component: './report/container/ReportDetailContainer',
           },
           

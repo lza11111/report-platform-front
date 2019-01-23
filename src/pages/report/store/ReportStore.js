@@ -4,6 +4,7 @@ import request from '@/utils/request';
 class ReportStore {
 
   @observable reportList = [];
+  @observable reportTemplateList = [];
 
   @observable reportContent = {};
   @observable reportUser = "";
@@ -36,7 +37,14 @@ class ReportStore {
       .then(res => {
         this.templateContent = res.content;
         this.templateUser = res.user;
-        //this.templattId = res.id;
+        this.templateId = res.id;
+      });
+  }
+
+  @action fetchTemplateList = () => {
+    return request.get(`/api/report-templates/`)
+      .then(res => {
+        this.reportTemplateList = res;
       });
   }
 
@@ -46,7 +54,6 @@ class ReportStore {
         content
       }
     }).then(res => {
-      console.log(res);
         this.reportContent = res.content;
       })
   }

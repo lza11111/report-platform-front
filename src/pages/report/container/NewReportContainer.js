@@ -1,15 +1,15 @@
 import React, { Component } from 'react';
 import { Button } from 'antd';
 
-import styles from '../style.less';
+import ReportDetailContainer from './ReportDetailContainer';
 
 class NewReportContainer extends Component {
-
   render() {
     return (
-      <div className={styles.container}>
-        <Button>文字</Button>
-      </div>
+      <ReportDetailContainer
+        templateId={this.props.match.params.id}
+        isNew
+      />
     );
   }
 }

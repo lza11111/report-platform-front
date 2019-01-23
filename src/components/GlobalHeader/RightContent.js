@@ -4,7 +4,6 @@ import { Spin, Tag, Menu, Icon, Avatar, Tooltip } from 'antd';
 import moment from 'moment';
 import groupBy from 'lodash/groupBy';
 import { NoticeIcon } from 'ant-design-pro';
-import HeaderSearch from '../HeaderSearch';
 import HeaderDropdown from '../HeaderDropdown';
 import SelectLang from '../SelectLang';
 import styles from './index.less';

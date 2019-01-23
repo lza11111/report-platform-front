@@ -1,4 +1,5 @@
 import React, { Component } from 'react';
+import moment from 'moment';
 import Link from 'umi/link';
 import { observer } from 'mobx-react';
 import { Button, Table } from 'antd';
@@ -19,6 +20,7 @@ const ReportTableColumn = [
   {
     title: '创建时间',
     dataIndex: 'create_time',
+    render: val => moment(val).format("YYYY年M月D日，hh:mm:ss")
   }
 ]
 

@@ -188,7 +188,6 @@ export default class EditableTable extends React.Component {
         }),
       };
     });
-    console.log(dataSource);
     return (
       <div>
         <Table
