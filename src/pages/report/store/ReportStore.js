@@ -72,6 +72,12 @@ class ReportStore {
       this.templateId = res.templateId;
     })
   }
+
+  @action deleteReport = (id) => {
+    return request.delete(`/api/report/${id}`).then(() => {
+      this.reportList = this.reportList.filter(report => report.id !== id)
+    })
+  }
 }
 
 export default new ReportStore();

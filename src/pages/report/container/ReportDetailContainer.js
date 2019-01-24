@@ -106,6 +106,7 @@ class ReportDetailContainer extends Component {
           <EditableTable
             dataSource={this.state.report[key] || []}
             columns={content.column}
+            rowDefault={content.defaultValue || []}
             editable={this.state.editing}
             save={(value) => this.changeTable(value, key)}
           />

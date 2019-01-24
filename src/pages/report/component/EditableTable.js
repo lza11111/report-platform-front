@@ -199,9 +199,10 @@ export default class EditableTable extends React.Component {
           pagination={false}
           expandedRowRender={this.props.expandedRowRender}
         />
+        {this.props.editable ? 
         <Button onClick={this.handleAdd} type="primary" style={{ marginTop: 10, float: 'right' }}>
-          Add a row
-        </Button>
+          新增一行
+        </Button> : null}
       </div>
     );
   }
