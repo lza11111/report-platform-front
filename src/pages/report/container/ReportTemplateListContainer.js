@@ -2,12 +2,14 @@ import React, { Component } from 'react';
 import moment from 'moment';
 import Link from 'umi/link';
 import { observer } from 'mobx-react';
-import { Button, Table, Modal } from 'antd';
+import { Button, Table, Modal, Card } from 'antd';
 
+import PageHeaderWrapper from '@/components/PageHeaderWrapper';
 import NewReportModal from '../component/NewReportModal';
+import EditTemplateModal from '../component/EditTemplateModal';
 import ReportStore from '../store/ReportStore';
 
-import styles from '../style.less';
+import styles from '../style/ReportTemplateListContainer.less';
 import router from 'umi/router';
 
 
@@ -19,12 +21,14 @@ class ReportTemplateListContainer extends Component {
     this.state = {
       loading: true,
       editorModel: false,
+      selectedTemplate: {},
     }
     ReportStore.fetchTemplateList().then(() => this.setState({loading: false}));
   }
 
-  editTemplate = () => {
-    this.setState({ editorModel: true });
+  editTemplate = (template) => {
+    console.log(template);
+    this.setState({ editorModel: true, selectedTemplate: template });
   }
 
   showNewReportModal = (id) => {
@@ -40,6 +44,18 @@ class ReportTemplateListContainer extends Component {
   cancelSave = () => {
     this.setState({ newModel: false });
   }
+
+  updateTemplate = (template) => {
+    ReportStore.updateTemplate(this.state.selectedTemplate.id, JSON.parse(template)).then(() => {
+      this.setState({ editorModel: false });
+      ReportStore.fetchTemplateList();
+    })
+  }
+
+  cancelEditTemplate = () => {
+    this.setState({ editorModel: false });
+  }
+
   render() {
     const ReportTemplateTableColumn = [
       {
@@ -75,7 +91,7 @@ class ReportTemplateListContainer extends Component {
                 创建报告
               </Button>
             {/* </Link> */}
-            <Button onClick={(val, row) => this.editTemplate(row)}>
+            <Button onClick={() => this.editTemplate(row)}>
               修改模板
             </Button>
             </div>
@@ -85,6 +101,15 @@ class ReportTemplateListContainer extends Component {
     ]
 
     return (
+      <PageHeaderWrapper>
+        <div className={styles.standardList}>
+        <Card
+            className={styles.listCard}
+            bordered={false}
+            title={<Button type="primary">新建报告模板</Button>}
+            style={{ marginTop: 24 }}
+            bodyStyle={{ padding: '0 32px 40px 32px' }}
+          >
       <div className={styles.container}>
         <Table 
           loading={this.state.loading} 
@@ -92,12 +117,21 @@ class ReportTemplateListContainer extends Component {
           columns={ReportTemplateTableColumn} 
           dataSource={ReportStore.reportTemplateList}
         />
+        </div>
+        </Card>
         <NewReportModal 
           visible={this.state.newModel} 
           onOk={this.saveReportTitle}
           onCancel={this.cancelSave}
         />
+        <EditTemplateModal 
+          visible={this.state.editorModel} 
+          template={this.state.selectedTemplate}
+          onOk={this.updateTemplate}
+          onCancel={this.cancelEditTemplate}
+        />
       </div>
+      </PageHeaderWrapper>
     );
   }
 }

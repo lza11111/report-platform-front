@@ -90,6 +90,12 @@ class ReportStore {
   @action setReportTitle = (title) => {
     this.reportTitle = title.toString();
   }
+
+  @action updateTemplate = (id, content) => {
+    return request.put(`/api/report-template/${id}`,{
+      data: {content},
+    });
+  }
 }
 
 
