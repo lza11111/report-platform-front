@@ -7,7 +7,7 @@ const ReportWrapper = ({ children, title, wrapperClassName, deep }) => {
   switch (deep) {
     case 0:
       return (
-        <PageHeaderWrapper title={title} wrapperClassName={wrapperClassName}>
+        <PageHeaderWrapper title={title} wrapperClassName={wrapperClassName} >
           {children}
         </PageHeaderWrapper>
       )

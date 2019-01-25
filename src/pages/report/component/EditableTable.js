@@ -1,5 +1,10 @@
 import React from 'react';
 import { Table, Input, Button, Popconfirm, Form } from 'antd';
+import request from '@/utils/request';
+
+//TODO: Remove ReportStore
+import ReportStore from '../store/ReportStore';
+
 import styles from '../style/EditableTable.less';
 
 const FormItem = Form.Item;
@@ -104,25 +109,32 @@ class EditableCell extends React.Component {
 export default class EditableTable extends React.Component {
   constructor(props) {
     super(props);
-    this.columns = [
-      ...props.columns,
-      {
-        title: '操作',
-        dataIndex: 'operation',
-        render: (text, record) =>
-          this.state.dataSource.length >= 1 ? (
-            <Popconfirm title="Sure to delete?" onConfirm={() => this.handleDelete(record.key)}>
-              <a href="javascript:;">Delete</a>
-            </Popconfirm>
-          ) : null,
-      },
-    ];
     this.state = {
       dataSource: props.dataSource,
       count: props.dataSource.length,
     };
   }
 
+  renderColumns = () =>{
+    const { editable, columns } = this.props;
+    if (editable) {
+      return [
+        ...columns,
+        {
+          title: '操作',
+          dataIndex: 'operation',
+          render: (text, record) =>
+            this.state.dataSource.length >= 1 ? (
+              <Popconfirm title="Sure to delete?" onConfirm={() => this.handleDelete(record.key)}>
+                <Button type="danger">Delete</Button>
+              </Popconfirm>
+            ) : null,
+        },
+      ]
+    }
+
+    return columns;
+  }
   componentWillReceiveProps(nextProps){
     if( nextProps.dataSource !== this.props.dataSource){
       this.setState({
@@ -133,11 +145,15 @@ export default class EditableTable extends React.Component {
   }
 
   handleDelete = key => {
+    const { save } = this.props;
     const dataSource = [...this.state.dataSource];
-    this.setState({ dataSource: dataSource.filter(item => item.key !== key) });
+    this.setState({ 
+      dataSource: dataSource.filter(item => item.key !== key) 
+    }, () => save(this.state.dataSource));
   };
 
   handleAdd = () => {
+    const { save } = this.props;
     const { count, dataSource } = this.state;
     const newData = {
       ...this.props.rowDefault,
@@ -146,23 +162,56 @@ export default class EditableTable extends React.Component {
     this.setState({
       dataSource: [...dataSource, newData],
       count: count + 1,
-    });
+    }, () => save(this.state.dataSource));
   };
 
   handleSave = row => {
-    const { save } = this.props;
+    const { save, opreation } = this.props;
+    let { count } = this.state;
     const newData = [...this.state.dataSource];
     const index = newData.findIndex(item => row.key === item.key);
-    if (row.hasOwnProperty('onChange')) {
-      row = row.onChange(row);
+
+    // TODO: 目前hardcode几个从其他地方获取数据的接口
+    if (opreation === 'ptp') {
+      ReportStore.getThridPartyData(`https://ptp.hz.netease.com/api/v1.0/round/${row.resultId}/summary`)
+        .then((res) => {
+          console.log(res);
+          let datas = [];
+          for (let testData of res.data){
+            console.log(testData);
+            const data = {
+              key: ++count,
+              resultId: row.resultId,
+              resultTestID:testData.test_id,
+              resultTotal:testData.total,
+              resultError:testData.error,
+              resultrtMax:testData.response_max,
+              resultrt50:testData.response50,
+              resultrt70:testData.response70,
+              resultrt90:testData.response90,
+              resultrt99:testData.response99,
+              resultrtSAvg:testData.mean_response_length,
+              resultApi: testData.test_name,
+              resultErrorRate: testData.err_rate,
+              resultrtAvg: testData.response_ave,
+              resultTps: testData.tps,
+            }
+            datas.push(data);
+          }
+          newData.splice(0, newData.length, ...datas);
+          this.setState({ dataSource: newData, count: count });
+          save(newData);
+        })
+    } else {
+      const item = newData[index];
+      newData.splice(index, 1, {
+        ...item,
+        ...row,
+      });
+      this.setState({ dataSource: newData});
+      save(newData);
     }
-    const item = newData[index];
-    newData.splice(index, 1, {
-      ...item,
-      ...row,
-    });
-    this.setState({ dataSource: newData });
-    save(newData);
+    
   };
 
   render() {
@@ -173,7 +222,7 @@ export default class EditableTable extends React.Component {
         cell: EditableCell,
       },
     };
-    const columns =  this.columns.map(col => {
+    const columns =  this.renderColumns().map(col => {
       if (!col.editable) {
         return col;
       }
@@ -195,7 +244,7 @@ export default class EditableTable extends React.Component {
           rowClassName={() => 'editable-row'}
           bordered
           dataSource={dataSource}
-          columns={columns}
+          columns={this.renderColumns()}
           pagination={false}
           expandedRowRender={this.props.expandedRowRender}
         />

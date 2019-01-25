@@ -25,7 +25,7 @@ class ReportDetailContainer extends Component {
     }
     if (props.templateId) {
       ReportStore.fetchTemplate(props.templateId).then(() => {
-        this.setState({ pageLoading: false});
+        this.setState({ pageLoading: false });
       });
     } else {
       ReportStore.fetchReport(this.props.match.params.id).then(() => {
@@ -58,7 +58,7 @@ class ReportDetailContainer extends Component {
     });
   };
 
-  renderTemplate = (item, deep) => {
+  renderTemplate = (item, deep, reportTitle) => {
     if (!item) return;
     let style = null;
     switch (deep) {
@@ -75,18 +75,18 @@ class ReportDetailContainer extends Component {
         style = null;
     }
     return (
-      <ReportWrapper title={item.title} wrapperClassName={style} deep={deep} key={item.title}>
+      <ReportWrapper title={item.title || ReportStore.reportTitle} wrapperClassName={style} deep={deep} key={item.title} hasKey={item.key}>
         {this.renderTemplateComponent(item.key, item.type, item.content, deep + 1)}
       </ReportWrapper>
     )
   }
 
+  // TODO: 分离出单独的组件
   renderTemplateComponent = (key, type, content, deep) => {
     switch (type) {
       case 0:
         return content.sub.map((item => this.renderTemplate(item, deep)));
       case 1:
-        console.log(this.state.report);
         return (
           this.state.editing ?
             <TextArea
@@ -106,7 +106,8 @@ class ReportDetailContainer extends Component {
           <EditableTable
             dataSource={this.state.report[key] || []}
             columns={content.column}
-            rowDefault={content.defaultValue || []}
+            rowDefault={content.default || []}
+            opreation={content.function || null}
             editable={this.state.editing}
             save={(value) => this.changeTable(value, key)}
           />
@@ -114,10 +115,40 @@ class ReportDetailContainer extends Component {
     }
   }
 
+  renderFooterToolbar = (width) => {
+    return (
+      <FooterToolbar style={{ width }}>
+        {this.state.editing ?
+          <Popconfirm title={<p>确定要取消吗？<br />将会丢失所有未保存的编辑内容！</p>} onConfirm={this.cancelEditReport}>
+            <Button disabled={this.state.buttonLoading} loading={this.state.buttonLoading}>
+              取消
+              </Button>
+          </Popconfirm>
+          : null}
+        {this.state.editing ?
+          <Button
+            disabled={this.state.buttonLoading}
+            loading={this.state.buttonLoading}
+            type="danger"
+            onClick={this.props.isNew ? this.addReport : this.updateReport}
+          >
+            保存
+            </Button> : null}
+        {!this.state.editing ?
+          <Button
+            type="primary"
+            onClick={this.editReport}>
+            编辑
+            </Button> : null}
+      </FooterToolbar>
+    )
+  }
+
   // TODO: merge change function
   changeTextArea = (value, key) => {
     this.state.report[key] = value.target.value;
   }
+
 
   changeTable = (value, key) => {
     this.state.report[key] = value;
@@ -132,7 +163,7 @@ class ReportDetailContainer extends Component {
   }
 
   updateReport = () => {
-    
+
     this.setState({ editing: false, pageLoading: true });
     ReportStore.updateReport(
       this.state.report
@@ -146,10 +177,11 @@ class ReportDetailContainer extends Component {
     console.log(ReportStore.templateId);
     ReportStore.addReport(
       "admin",
+      ReportStore.reportTitle,
       ReportStore.templateId,
       this.state.report
     ).then(() => {
-      this.setState({ pageLoading: false});
+      this.setState({ pageLoading: false });
       router.push(`/report/${ReportStore.reportId}`);
     });
   }
@@ -158,33 +190,10 @@ class ReportDetailContainer extends Component {
     const { width } = this.state;
     return (
       <Spin tip="Loading..." spinning={this.state.pageLoading}>
-      <div className={styles.container}>
-        {this.renderTemplate(ReportStore.templateContent, 0)}
-        <FooterToolbar style={{ width }}>
-          {this.state.editing ?
-            <Popconfirm title={<p>确定要取消吗？<br />将会丢失所有未保存的编辑内容！</p>} onConfirm={this.cancelEditReport}>
-              <Button disabled={this.state.buttonLoading} loading={this.state.buttonLoading}>
-                取消
-              </Button>
-            </Popconfirm>
-            : null}
-          {this.state.editing ?
-            <Button
-              disabled={this.state.buttonLoading}
-              loading={this.state.buttonLoading}
-              type="danger"
-              onClick={this.props.isNew ? this.addReport : this.updateReport}
-            >
-              保存
-            </Button> : null}
-          {!this.state.editing ?
-            <Button
-              type="primary"
-              onClick={this.editReport}>
-              编辑
-            </Button> : null}
-        </FooterToolbar>
-      </div>
+        <div className={styles.container}>
+          {this.renderTemplate(ReportStore.templateContent, 0, this.state.report.title)}
+          {this.renderFooterToolbar(width)}
+        </div>
       </Spin>
     )
   }

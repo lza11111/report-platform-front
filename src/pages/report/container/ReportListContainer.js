@@ -39,7 +39,6 @@ class ReportListContainer extends Component {
   }
 
   render() {
-
     const ReportTableColumn = [
       {
         title: '报告编号',

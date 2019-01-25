@@ -2,10 +2,13 @@ import React, { Component } from 'react';
 import moment from 'moment';
 import Link from 'umi/link';
 import { observer } from 'mobx-react';
-import { Button, Table } from 'antd';
+import { Button, Table, Modal } from 'antd';
+
+import NewReportModal from '../component/NewReportModal';
 import ReportStore from '../store/ReportStore';
 
 import styles from '../style.less';
+import router from 'umi/router';
 
 
 
@@ -24,6 +27,19 @@ class ReportTemplateListContainer extends Component {
     this.setState({ editorModel: true });
   }
 
+  showNewReportModal = (id) => {
+    this.setState({ newModel: true, templateId: id });
+  }
+
+  saveReportTitle = (title) => {
+    ReportStore.setReportTitle(title);
+    this.setState({ newModel: false });
+    router.push(`/report/add/${this.state.templateId}`)
+  }
+
+  cancelSave = () => {
+    this.setState({ newModel: false });
+  }
   render() {
     const ReportTemplateTableColumn = [
       {
@@ -33,6 +49,7 @@ class ReportTemplateListContainer extends Component {
       {
         title: '模板标题',
         dataIndex: 'title',
+        
       },
       {
         title: '模板简介',
@@ -53,11 +70,11 @@ class ReportTemplateListContainer extends Component {
         render: (val, row) => {
           return(
             <div>
-            <Link to={`/report/add/${row.id}`}>
-              <Button type="primary" >
+            {/* <Link to={`/report/add/${row.id}`}> */}
+              <Button type="primary" onClick={() => this.showNewReportModal(row.id)} >
                 创建报告
               </Button>
-            </Link>
+            {/* </Link> */}
             <Button onClick={(val, row) => this.editTemplate(row)}>
               修改模板
             </Button>
@@ -74,6 +91,11 @@ class ReportTemplateListContainer extends Component {
           rowKey={(template => template.id)} 
           columns={ReportTemplateTableColumn} 
           dataSource={ReportStore.reportTemplateList}
+        />
+        <NewReportModal 
+          visible={this.state.newModel} 
+          onOk={this.saveReportTitle}
+          onCancel={this.cancelSave}
         />
       </div>
     );

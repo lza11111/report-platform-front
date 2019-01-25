@@ -7,6 +7,7 @@ class ReportStore {
   @observable reportTemplateList = [];
 
   @observable reportContent = {};
+  @observable reportTitle = null;
   @observable reportUser = "";
   @observable reportId = 0;
 
@@ -25,6 +26,7 @@ class ReportStore {
     return request.get(`/api/report/${id}`)
       .then(res => {
         this.reportContent = res.content;
+        this.reportTitle = res.title;
         this.reportUser = res.user;
         this.reportId = res.id;
         this.templateId = res.templateId;
@@ -58,16 +60,18 @@ class ReportStore {
       })
   }
 
-  @action addReport = (user, templateId, content) => {
+  @action addReport = (user, title,templateId, content) => {
     return request.post('/api/report/', {
       data: {
         user,
+        title,
         templateId,
         content,
       }
     }).then(res => {
       this.reportContent = res.content;
       this.reportUser = res.user;
+      this.reportTitle = res.title;
       this.reportId = res.id;
       this.templateId = res.templateId;
     })
@@ -78,6 +82,15 @@ class ReportStore {
       this.reportList = this.reportList.filter(report => report.id !== id)
     })
   }
+
+  @action getThridPartyData = (url) => {
+    return request.get(`/api/report/third_party?url=${url}`);
+  }
+
+  @action setReportTitle = (title) => {
+    this.reportTitle = title.toString();
+  }
 }
+
 
 export default new ReportStore();
