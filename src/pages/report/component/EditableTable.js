@@ -19,6 +19,10 @@ const EditableRow = ({ form, index, ...props }) => (
 const EditableFormRow = Form.create()(EditableRow);
 
 class EditableCell extends React.Component {
+  constructor(props) {
+    super(props);
+  }
+
   state = {
     editing: false,
   };
@@ -39,6 +43,7 @@ class EditableCell extends React.Component {
 
   toggleEdit = () => {
     const editing = !this.state.editing;
+    console.log(editing);
     this.setState({ editing }, () => {
       if (editing) {
         this.input.focus();
@@ -68,7 +73,7 @@ class EditableCell extends React.Component {
 
   render() {
     const { editing } = this.state;
-    const { editable, dataIndex, title, record, index, handleSave, ...restProps } = this.props;
+    const { editable, required, dataIndex, title, record, index, handleSave, ...restProps } = this.props;
     return (
       <td ref={node => (this.cell = node)} {...restProps}>
         {editable ? (
@@ -80,17 +85,18 @@ class EditableCell extends React.Component {
                   {form.getFieldDecorator(dataIndex, {
                     rules: [
                       {
-                        required: true,
+                        required,
                         message: `${title} is required.`,
                       },
                     ],
                     initialValue: record[dataIndex],
                   })(<Input ref={node => (this.input = node)} onPressEnter={this.save} />)}
                 </FormItem>
+                // <Input defaultValue={record[dataIndex]} ref={node => (this.input = node)} onChange={} onPressEnter={this.save} />
               ) : (
                 <div
                   className="editable-cell-value-wrap"
-                  style={{ paddingRight: 24 }}
+                  style={{ paddingRight: 24, minHeight: 20 }}
                   onClick={this.toggleEdit}
                 >
                   {restProps.children}
@@ -135,6 +141,7 @@ export default class EditableTable extends React.Component {
 
     return columns;
   }
+
   componentWillReceiveProps(nextProps){
     if( nextProps.dataSource !== this.props.dataSource){
       this.setState({
@@ -231,6 +238,7 @@ export default class EditableTable extends React.Component {
         onCell: record => ({
           record,
           editable: col.editable && this.props.editable,
+          required: col.required || false,
           dataIndex: col.dataIndex,
           title: col.title,
           handleSave: this.handleSave,
@@ -244,7 +252,7 @@ export default class EditableTable extends React.Component {
           rowClassName={() => 'editable-row'}
           bordered
           dataSource={dataSource}
-          columns={this.renderColumns()}
+          columns={columns}
           pagination={false}
           expandedRowRender={this.props.expandedRowRender}
         />

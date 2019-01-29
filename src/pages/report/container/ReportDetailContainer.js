@@ -30,7 +30,7 @@ class ReportDetailContainer extends Component {
     } else {
       ReportStore.fetchReport(this.props.match.params.id).then(() => {
         ReportStore.fetchTemplate().then(() => {
-          this.setState({ pageLoading: false, report: ReportStore.reportContent });
+          this.setState({ pageLoading: false, report: JSON.parse(JSON.stringify(ReportStore.reportContent)) });
         });
       })
     }
@@ -87,6 +87,7 @@ class ReportDetailContainer extends Component {
       case 0:
         return content.sub.map((item => this.renderTemplate(item, deep)));
       case 1:
+
         return (
           this.state.editing ?
             <TextArea
@@ -159,22 +160,21 @@ class ReportDetailContainer extends Component {
   }
 
   cancelEditReport = () => {
-    this.setState({ editing: false, report: ReportStore.reportContent });
+    this.setState({ editing: false, report: JSON.parse(JSON.stringify(ReportStore.reportContent)) });
   }
 
   updateReport = () => {
-
     this.setState({ editing: false, pageLoading: true });
     ReportStore.updateReport(
       this.state.report
     ).then(() => {
-      this.setState({ pageLoading: false, report: ReportStore.reportContent });
+      this.setState({ pageLoading: false, report: JSON.parse(JSON.stringify(ReportStore.reportContent)) });
     });
   }
 
   addReport = () => {
     this.setState({ editing: false, pageLoading: true });
-    console.log(ReportStore.templateId);
+    
     ReportStore.addReport(
       "admin",
       ReportStore.reportTitle,
